@@ -16,6 +16,9 @@ logs/
 # Token JWT salvo localmente (NUNCA versionar!)
 .token
 
+# Preferencia de tema salva localmente
+.theme
+
 # Arquivos de build e distribuição
 build/
 dist/

@@ -15,4 +15,5 @@ LOG_DIR.mkdir(parents=True, exist_ok=True)
 CHANGE_LOG_FILE = LOG_DIR / "alteracoes.json"
 DNS_LOG_FILE = LOG_DIR / "dns_consultas.json"
 TOKEN_FILE = APP_DIR / ".token"
+THEME_FILE = APP_DIR / ".theme"
 _log_lock = threading.Lock()

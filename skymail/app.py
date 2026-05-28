@@ -11,7 +11,7 @@ from tkinter import filedialog, messagebox
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 
-from .constants import APP_DIR, LOG_DIR, TOKEN_FILE
+from .constants import APP_DIR, LOG_DIR, TOKEN_FILE, THEME_FILE
 from .endpoints import ENDPOINTS, DNS_ENDPOINTS, ENDPOINT_PAGES
 from .field_config import FIELD_LABELS, SAMPLE_VALUES
 from .api_client import ApiClient, write_change_log, write_dns_log, normalize_row, now_iso
@@ -20,16 +20,25 @@ from .login_dialog import LoginDialog
 
 class App(ttk.Window):
     def __init__(self):
-        super().__init__(themename="darkly")
+        # Carrega tema salvo antes de inicializar a janela
+        try:
+            _saved_theme = THEME_FILE.read_text(encoding="utf-8").strip()
+            if _saved_theme not in ("darkly", "cosmo"):
+                _saved_theme = "darkly"
+        except Exception:
+            _saved_theme = "darkly"
+
+        super().__init__(themename=_saved_theme)
         self.title("Skymail API Studio")
         self.geometry("1200x800")
         self.minsize(1050, 720)
 
         self.running_batch = False
-        self._cancel_batch = False
+        self._cancel_event = threading.Event()     # thread-safe cancel flag
+        self._dns_cancel_event = threading.Event() # thread-safe DNS cancel flag
         self._batch_success = 0
         self._batch_errors = 0
-        self._current_theme = "darkly"
+        self._current_theme = _saved_theme
         self.preview_rows = []
         self.preview_columns = []
         self.endpoint_labels = {v["label"]: k for k, v in ENDPOINTS.items()}
@@ -38,7 +47,6 @@ class App(ttk.Window):
         self.field_vars = {}        # referência dinâmica para aba ativa
         self._tab_state = {}       # estado por categoria
         self.dns_field_vars = {}
-        self._dns_cancel_batch = False
         self._dns_batch_success = 0
         self._dns_batch_errors = 0
         self.dns_preview_rows = []
@@ -421,6 +429,10 @@ class App(ttk.Window):
     def toggle_theme(self):
         self._current_theme = "cosmo" if self._current_theme == "darkly" else "darkly"
         self.style.theme_use(self._current_theme)
+        try:
+            THEME_FILE.write_text(self._current_theme, encoding="utf-8")
+        except Exception:
+            pass
 
     # ── Salvar resposta ────────────────────────────────────────
     def save_single_response(self):
@@ -443,7 +455,7 @@ class App(ttk.Window):
 
     # ── Cancelar lote ──────────────────────────────────────────
     def cancel_batch(self):
-        self._cancel_batch = True
+        self._cancel_event.set()
         self.status_var.set("Cancelando...")
         self.cancel_batch_btn.configure(state="disabled")
 
@@ -693,7 +705,7 @@ class App(ttk.Window):
         self.run_batch_btn.configure(state="disabled" if running else "normal")
         self.cancel_batch_btn.configure(state="normal" if running else "disabled")
         if not running:
-            self._cancel_batch = False
+            self._cancel_event.clear()
 
     def run_batch(self):
         if self.running_batch:
@@ -770,8 +782,9 @@ class App(ttk.Window):
         client = ApiClient(token)
 
         for idx, row in enumerate(rows, start=1):
-            if self._cancel_batch:
+            if self._cancel_event.is_set():
                 self.after(0, lambda: self.log_batch("[!] Execucao cancelada pelo usuario."))
+                self.after(0, lambda: self.status_var.set("Cancelado"))
                 break
 
             missing = [k for k in required if not row.get(k)]
@@ -1178,7 +1191,7 @@ class App(ttk.Window):
             self.dns_preview_tree.insert("", "end", values=[row.get(c, "") for c in self.dns_preview_columns])
 
     def cancel_dns_batch(self):
-        self._dns_cancel_batch = True
+        self._dns_cancel_event.set()
         self.dns_status_var.set("Cancelando...")
         self.dns_cancel_batch_btn.configure(state="disabled")
 
@@ -1186,7 +1199,7 @@ class App(ttk.Window):
         if running:
             self.dns_run_batch_btn.configure(state="disabled")
             self.dns_cancel_batch_btn.configure(state="normal")
-            self._dns_cancel_batch = False
+            self._dns_cancel_event.clear()
         else:
             self.dns_run_batch_btn.configure(state="normal")
             self.dns_cancel_batch_btn.configure(state="disabled")
@@ -1275,8 +1288,9 @@ class App(ttk.Window):
         client = ApiClient(token)
 
         for idx, row in enumerate(rows, start=1):
-            if self._dns_cancel_batch:
+            if self._dns_cancel_event.is_set():
                 self.after(0, lambda: self.log_dns_batch("[!] Execucao cancelada pelo usuario."))
+                self.after(0, lambda: self.dns_status_var.set("Cancelado"))
                 break
 
             missing = [k for k in required if not row.get(k)]
