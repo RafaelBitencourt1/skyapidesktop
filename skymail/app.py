@@ -32,6 +32,17 @@ class App(ttk.Window):
         self.title("Skymail API Studio")
         self.geometry("1200x800")
         self.minsize(1050, 720)
+        # Ícone da janela
+        try:
+            import sys as _sys
+            _base = Path(getattr(_sys, '_MEIPASS', None) or APP_DIR)
+            _icon_path = _base / "skymail_icon.ico"
+            if not _icon_path.exists():
+                _icon_path = APP_DIR / "skymail_icon.ico"
+            if _icon_path.exists():
+                self.iconbitmap(str(_icon_path))
+        except Exception:
+            pass
 
         self.running_batch = False
         self._cancel_event = threading.Event()     # thread-safe cancel flag
