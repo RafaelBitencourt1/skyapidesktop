@@ -1,137 +1,95 @@
 # Skymail API Studio
 
 Interface gráfica desktop para automação dos endpoints da **API Skymail**.  
-Execute chamadas individuais e em lote (via CSV) para todos os recursos da plataforma: caixas postais, domínios, grupos, clientes, hospedagem, DNS, SMTP e backup.
+Permite executar chamadas individuais e em lote (via CSV) para todos os recursos da plataforma: caixas postais, domínios, grupos, clientes, hospedagem, DNS, SMTP, backup e muito mais.
 
 ---
 
-## Passo a Passo — Usar com Python (código-fonte)
+## Funcionalidades
 
-### Pré-requisito
-
-- **Python 3.9 ou superior** — [python.org/downloads](https://www.python.org/downloads/)
-  > Marque a opção **"Add Python to PATH"** durante a instalação no Windows
+- **140+ endpoints** organizados por categoria em abas
+- **Execução individual** com formulário de campos dinâmico
+- **Execução em lote via CSV** com preview de dados e progresso
+- **Autenticação JWT** — geração automática de token ou uso de token existente
+- **Logs automáticos** de alterações (`POST`, `PUT`, `DELETE`) em JSON
+- **Tema claro/escuro** com ttkbootstrap (`darkly`)
 
 ---
 
-### Passo 1 — Clonar o repositório
+## Instalação
+
+### Opção 1 — Um clique (recomendada para Windows)
+
+> Não é necessário ter Python instalado previamente.
+
+1. Baixe ou clone o repositório:
+   ```
+   git clone https://github.com/SEU_USUARIO/skymail-api-studio.git
+   cd skymail-api-studio
+   ```
+
+2. Dê duplo clique em **`instalar.bat`**
+
+O script faz automaticamente:
+- Detecta se o Python já está instalado (3.9+)
+- Se não encontrar, **baixa e instala o Python 3.12 silenciosamente**
+- Cria um ambiente virtual isolado (`.venv`)
+- Instala `requests` e `ttkbootstrap`
+- Abre o Skymail API Studio
+
+> Nas próximas vezes, basta clicar em `instalar.bat` novamente — ele detecta que tudo já está instalado e abre direto o app.
+
+---
+
+### Opção 2 — Manual (venv isolado)
 
 ```bash
+# 1. Clone o repositório
 git clone https://github.com/SEU_USUARIO/skymail-api-studio.git
 cd skymail-api-studio
-```
 
-Ou baixe o ZIP pelo GitHub e extraia em uma pasta.
-
----
-
-### Passo 2 — Instalar dependências
-
-**Opção A — Automática (recomendada no Windows):**
-
-Dê duplo clique em `run_skymail_gui.bat`.  
-Ele verifica o Python, instala as dependências automaticamente e já abre a interface.
-
-**Opção B — Manual via terminal:**
-
-```bash
-pip install -r requirements.txt
-```
-
-Ou com ambiente virtual isolado:
-
-```bash
+# 2. Crie e ative um ambiente virtual
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1   # PowerShell
+
+# Windows (PowerShell)
+.\.venv\Scripts\Activate.ps1
+
+# Windows (CMD)
+.venv\Scripts\activate.bat
+
+# 3. Instale as dependências
 pip install -r requirements.txt
-```
 
----
-
-### Passo 3 — Executar o app
-
-```bash
+# 4. Execute o app
 python skymail_gui.py
 ```
 
-Ou dê duplo clique em `run_skymail_gui.bat`.
-
 ---
 
-### Passo 4 — Autenticação
-
-Ao abrir, a tela de login aparece obrigatoriamente:
-
-| Aba | O que fazer |
-|---|---|
-| **Criar Token** | Informe usuário, senha e Secret Key para gerar um novo JWT |
-| **Token Existente** | Cole um JWT gerado anteriormente |
-
-> O acesso à interface só é liberado com um token JWT estruturalmente válido.  
-> Fechar a janela de login sem autenticar encerra o aplicativo.
-
-O token é salvo localmente no arquivo `.token` para não precisar informar novamente.
-
----
-
-### Passo 5 — Usar a interface
-
-Após autenticar, a interface principal abre com duas abas:
-
-**Endpoint Individual**
-1. Selecione a **categoria** (ex: Caixa Postal, Domínio, DNS...)
-2. Selecione o **endpoint** desejado no menu
-3. Preencha os **campos obrigatórios**
-4. Clique em **Executar**
-5. A resposta JSON aparece no painel da direita
-
-**Execução em Lote (CSV)**
-1. Selecione o **endpoint** de lote
-2. Clique em **Importar CSV** e escolha o arquivo
-3. Confira o **preview** dos dados na tabela
-4. Clique em **Executar Lote**
-5. Acompanhe o progresso na barra e no console
-6. Logs de alterações (`POST`, `PUT`, `DELETE`) são salvos automaticamente em `logs/`
-
----
-
-## Passo a Passo — Usar o Executável (.exe)
-
-Se não quiser instalar Python, use o executável compilado.
-
-### Passo 1 — Obter o executável
-
-Compile localmente (veja seção abaixo) ou receba a pasta `SkymailAPIStudio/` já pronta.
-
-### Passo 2 — Executar
-
-Abra a pasta `SkymailAPIStudio/` e dê duplo clique em **`SkymailAPIStudio.exe`**.
-
-> A pasta `_internal/` deve ficar **junto** com o `.exe` — não mova o exe sozinho.
-
-### Passo 3 — Autenticar e usar
-
-Siga os **Passos 4 e 5** da seção acima. O funcionamento é idêntico.
-
----
-
-## Gerar o Executável (.exe)
-
-Para compilar do zero na sua máquina:
+### Opção 3 — Sem ambiente virtual (instalação global)
 
 ```bash
-# Windows — execute o script incluído:
-build_exe.bat
+pip install requests ttkbootstrap
+python skymail_gui.py
 ```
 
-Ou manualmente:
+---
 
-```bash
-pip install pyinstaller
-pyinstaller --onedir --windowed --name "SkymailAPIStudio" --collect-data ttkbootstrap skymail_gui.py
-```
+## Uso
 
-O resultado fica em `dist\SkymailAPIStudio\`. Funciona em qualquer Windows sem precisar do Python instalado.
+> **Importante:** A tela com as chamadas de API **só é exibida após autenticação com um token JWT válido**. Sem um token válido, o acesso à interface principal é bloqueado.
+
+1. Ao abrir, a tela de **autenticação** aparece obrigatoriamente:
+   - **Criar Token** — informe usuário, senha e Secret Key para gerar e salvar um novo JWT
+   - **Token Existente** — cole um JWT já gerado previamente
+
+   Somente após inserir ou criar um token válido a interface principal será carregada.
+
+2. Após autenticar, a interface principal abre com as abas:
+   - **Endpoint Individual** — selecione a categoria, o endpoint e preencha os campos
+   - **Execução em Lote** — selecione um CSV e execute em massa
+
+3. Logs de alterações são salvos automaticamente em `logs/alteracoes.json`
 
 ---
 
@@ -140,10 +98,13 @@ O resultado fica em `dist\SkymailAPIStudio\`. Funciona em qualquer Windows sem p
 ```
 skymail-api-studio/
 ├── skymail_gui.py          # Entry point — inicia o app
-├── run_skymail_gui.bat     # Lançador Windows (instala deps automaticamente)
-├── build_exe.bat           # Script de build PyInstaller
+├── instalar.bat            # Instalador com um clique (baixa Python se necessário)
+├── run_skymail_gui.bat     # Lançador rápido (requer ambiente já configurado)
 ├── requirements.txt        # Dependências Python
+├── .gitignore
+├── README.md
 └── skymail/                # Pacote principal
+    ├── __init__.py
     ├── constants.py        # BASE_URL, caminhos, lock de log
     ├── endpoints.py        # Dicionários de endpoints (140 + 8 DNS)
     ├── field_config.py     # Labels e valores de exemplo dos campos
@@ -155,18 +116,39 @@ skymail-api-studio/
 
 ---
 
-## Dependências
+## Gerar executável Windows (.exe)
 
-| Pacote | Uso |
-|---|---|
-| `requests` | Chamadas HTTP à API Skymail |
-| `ttkbootstrap` | Tema e widgets visuais (`darkly`) |
+Para distribuir sem precisar do Python instalado, use o PyInstaller:
 
-`tkinter` já vem incluído na instalação padrão do Python no Windows.
+```bash
+# Execute o script de build incluído:
+build_exe.bat
+```
+
+Ou manualmente:
+```bash
+pip install pyinstaller
+pyinstaller --onefile --windowed --name "SkymailAPIStudio" --collect-data ttkbootstrap skymail_gui.py
+```
+
+O arquivo `dist\SkymailAPIStudio.exe` gerado é **autossuficiente** — pode ser copiado para qualquer máquina Windows e executado com duplo clique, sem instalar Python.
+
+> **Nota:** O primeiro build leva 1-3 minutos. O `.exe` terá ~60-90 MB (inclui Python + todas as dependências).
 
 ---
 
-## Segurança
+## Dependências
+
+| Pacote | Versão mínima | Uso |
+|---|---|---|
+| `requests` | 2.28.0 | Chamadas HTTP à API Skymail |
+| `ttkbootstrap` | 1.10.0 | Tema e widgets visuais (`darkly`) |
+
+`tkinter` já está incluído na instalação padrão do Python no Windows.
+
+---
+
+## Observações de segurança
 
 - O arquivo `.token` é salvo **localmente** e está no `.gitignore` — nunca suba seu token para o repositório
 - Os logs em `logs/` também estão no `.gitignore`
