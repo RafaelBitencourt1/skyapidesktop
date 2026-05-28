@@ -1,0 +1,47 @@
+# Ambiente virtual Python
+.venv/
+venv/
+env/
+
+# Arquivos de cache Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+
+# Logs gerados pelo app
+logs/
+
+# Token JWT salvo localmente (NUNCA versionar!)
+.token
+
+# Arquivos de build e distribuição
+build/
+dist/
+*.exe
+*.spec
+SkymailAPIStudio/
+skymail_api_studio.egg-info/
+
+# Manter o .spec no repo para recompilações reproduzíveis
+# !SkymailAPIStudio.spec
+
+# Backup gerado pelo split de módulos
+skymail_gui_BACKUP.py
+
+# Arquivos de configuração de IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Sistema operacional
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Arquivos temporários
+*.tmp
+*.log
+*.bak
