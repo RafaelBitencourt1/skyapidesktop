@@ -52,6 +52,7 @@ class App(ttk.Window):
         self.dns_preview_rows = []
         self.dns_preview_columns = []
         self.single_response_var = tk.StringVar(value="")
+        self._text_widgets = []  # tk.Text registrados para update de tema
 
         self.withdraw()  # oculta ate login
         self._build_ui()
@@ -77,7 +78,7 @@ class App(ttk.Window):
         header.pack(fill="x")
         ttk.Label(header, text="Skymail API Studio",
                   font=("Segoe UI", 22, "bold"),
-                  bootstyle="light").pack(anchor="w")
+                  bootstyle="primary").pack(anchor="w")
         ttk.Label(header,
                   text="Todas as funcoes e endpoints da API em execucao individual e lote por CSV.",
                   font=("Segoe UI", 10), bootstyle="secondary").pack(anchor="w", pady=(4, 0))
@@ -172,14 +173,16 @@ class App(ttk.Window):
         resp_toolbar.pack(fill="x", padx=10, pady=(4, 2))
         ttk.Button(resp_toolbar, text="Salvar resposta (.json)", command=self.save_single_response,
                    bootstyle="info-outline", padding=(9, 3)).pack(side="right")
+        _bg, _fg, _ibg = self._text_theme_colors()
         response = tk.Text(
             resp_card, wrap="word",
-            bg="#0d1117", fg="#c9d1d9",
-            insertbackground="#c9d1d9",
+            bg=_bg, fg=_fg,
+            insertbackground=_ibg,
             relief="flat", font=("Consolas", 10),
         )
         response.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         response.configure(state="disabled")
+        self._text_widgets.append(response)
 
         field_vars = {}
         state = {
@@ -253,9 +256,10 @@ class App(ttk.Window):
                 row=idx, column=0, sticky="w", pady=(0, 6), padx=(0, 12)
             )
             if field == "data_kv":
+                _bg, _fg, _ibg = self._text_input_colors()
                 txt = tk.Text(fields_frame, width=58, height=4,
-                              bg="#1e2936", fg="#c9d1d9",
-                              insertbackground="#c9d1d9", relief="flat",
+                              bg=_bg, fg=_fg,
+                              insertbackground=_ibg, relief="flat",
                               font=("Consolas", 10))
                 txt.grid(row=idx, column=1, sticky="ew", pady=(0, 6))
                 field_vars[field] = txt
@@ -365,14 +369,16 @@ class App(ttk.Window):
         ttk.Button(status_row, text="Limpar console", command=self.clear_batch_console,
                    bootstyle="secondary-outline", padding=(9, 3)).pack(side="right", padx=(0, 6))
 
+        _bg, _fg, _ibg = self._text_theme_colors()
         self.batch_console = tk.Text(
             result, wrap="word",
-            bg="#0d1117", fg="#c9d1d9",
-            insertbackground="#c9d1d9",
+            bg=_bg, fg=_fg,
+            insertbackground=_ibg,
             relief="flat", font=("Consolas", 10),
         )
         self.batch_console.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         self.batch_console.configure(state="disabled")
+        self._text_widgets.append(self.batch_console)
 
         # Filtra o combo de endpoint para a categoria inicial
         self.on_batch_category_change()
@@ -426,9 +432,28 @@ class App(ttk.Window):
         return True
 
     # ── Tema ───────────────────────────────────────────────────
+    def _text_theme_colors(self):
+        if self._current_theme == "darkly":
+            return "#0d1117", "#c9d1d9", "#c9d1d9"
+        return "#ffffff", "#212529", "#212529"
+
+    def _text_input_colors(self):
+        if self._current_theme == "darkly":
+            return "#1e2936", "#c9d1d9", "#c9d1d9"
+        return "#f0f2f5", "#212529", "#212529"
+
+    def _update_text_colors(self):
+        bg, fg, ibg = self._text_theme_colors()
+        for w in self._text_widgets:
+            try:
+                w.configure(bg=bg, fg=fg, insertbackground=ibg)
+            except Exception:
+                pass
+
     def toggle_theme(self):
         self._current_theme = "cosmo" if self._current_theme == "darkly" else "darkly"
         self.style.theme_use(self._current_theme)
+        self._update_text_colors()
         try:
             THEME_FILE.write_text(self._current_theme, encoding="utf-8")
         except Exception:
@@ -523,9 +548,10 @@ class App(ttk.Window):
                 row=idx, column=0, sticky="w", pady=(0, 6), padx=(0, 12)
             )
             if field == "data_kv":
+                _bg, _fg, _ibg = self._text_input_colors()
                 txt = tk.Text(self.fields_frame, width=58, height=4,
-                              bg="#1e2936", fg="#c9d1d9",
-                              insertbackground="#c9d1d9", relief="flat",
+                              bg=_bg, fg=_fg,
+                              insertbackground=_ibg, relief="flat",
                               font=("Consolas", 10))
                 txt.grid(row=idx, column=1, sticky="ew", pady=(0, 6))
                 self.field_vars[field] = txt
@@ -936,14 +962,16 @@ class App(ttk.Window):
                    bootstyle="info-outline", padding=(9, 3)).pack(side="right")
         ttk.Button(resp_toolbar, text="Abrir pasta logs", command=self.open_dns_logs,
                    bootstyle="secondary-outline", padding=(9, 3)).pack(side="right", padx=(0, 6))
+        _bg, _fg, _ibg = self._text_theme_colors()
         self.dns_single_response = tk.Text(
             resp_card, wrap="word",
-            bg="#0d1117", fg="#c9d1d9",
-            insertbackground="#c9d1d9",
+            bg=_bg, fg=_fg,
+            insertbackground=_ibg,
             relief="flat", font=("Consolas", 10),
         )
         self.dns_single_response.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         self.dns_single_response.configure(state="disabled")
+        self._text_widgets.append(self.dns_single_response)
 
         self.on_dns_endpoint_change()
 
@@ -1031,14 +1059,16 @@ class App(ttk.Window):
         ttk.Button(status_row, text="Limpar console", command=self.clear_dns_batch_console,
                    bootstyle="secondary-outline", padding=(9, 3)).pack(side="right", padx=(0, 6))
 
+        _bg, _fg, _ibg = self._text_theme_colors()
         self.dns_batch_console = tk.Text(
             result, wrap="word",
-            bg="#0d1117", fg="#c9d1d9",
-            insertbackground="#c9d1d9",
+            bg=_bg, fg=_fg,
+            insertbackground=_ibg,
             relief="flat", font=("Consolas", 10),
         )
         self.dns_batch_console.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         self.dns_batch_console.configure(state="disabled")
+        self._text_widgets.append(self.dns_batch_console)
 
         self.on_dns_batch_endpoint_change()
 
